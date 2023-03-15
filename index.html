@@ -13,32 +13,63 @@
     </head>
     <body>
         <div id="app">
-
-            <div class="container-sm ">
-                <div class="row">
+          <div class="container-sm ">
+            <div class="row">
                     <div class="col p-5">
                         <img src="keplr-logo.png" alt="" style="max-width: 200px;    margin: auto;display: block;">
                     </div>
-                </div>
+            </div>
+            <div class="row">
+                        <b>detected address:
+                        <div id="address"></div></b>
+            </div>
             <div class="card ">
                 <div class="card-header">
-                    Send Coin
+                    Transaction
                 </div>
                 <div class="card-body">
-
-                        <b>Address:</b>
-                        <div id="address"></div>
                         <form name="sendForm">
+                            <div class="form-group">
+                                <label for="type">Type</label>
+                                <div class="input-group">
+                                    <input class="form-control" id="typeA" name="typeA"><div class="input-group-text">/</div><input class="form-control" id="typeB" name="typeB">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="message">Payload</label>
+                                <textarea rows=9 class="form-control" id="payload" name="payload"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="gasAmount">Gas</label>
+                                <div class="input-group">
+                                    <input class="form-control" id="gas" name="gas">
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Submit</button>
+                        </form>
+
+                </div>
+            </div>
+            <div class="card ">
+                <div class="card-header">
+                    Simple Send
+                </div>
+                <div class="card-body">
+                        <form name="simpleForm">
                             <div class="form-group">
                                 <label for="recipient">Recipient</label>
                                 <input class="form-control" id="recipient" name="recipient">
+                            </div>
+                            <div class="form-group">
+                                <label for="memo">memo</label>
+                                <input class="form-control" id="memo" name="memo">
                             </div>
                             <div class="form-group">
                                 <label for="amount">Amount</label>
                                 <div class="input-group">
                                     <input class="form-control" id="amount" name="amount">
                                     <div class="input-group-append">
-                                        <div class="input-group-text">OSMO</div>
+                                        <div class="input-group-text">KAVA</div>
                                     </div>
                                 </div>
                             </div>
@@ -47,9 +78,7 @@
 
                 </div>
             </div>
-            </div>
-
-
+          </div>
         </div>
     </body>
 </html>
