@@ -32,3 +32,5 @@ For other transactions, use the `Transaction` form. Input the *message type*, th
 A simple way to find out what should those be consists in preparing to transact on the web interface, e.g., one of the many functions offered on https://app.kava.io/. When the Keplr popup opens to sign the transaction, it should display the *message type* on the *Details* tab, the *payload* on the *Data tab*, and the *gas limit* on the *Advanced* tab. Copy those fields to the form, and then click cancel on the Keplr popup.
 
 Click on the `Submit` button; Keplr should popup. Approve the transaction on Keplr **without** touching the fee controls. The transaction will broadcast upon approval.
+
+![](kavaapp.png)
