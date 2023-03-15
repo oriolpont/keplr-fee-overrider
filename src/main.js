@@ -1,12 +1,130 @@
 import { SigningCosmosClient } from '@cosmjs/launchpad'
 import {
-    DirectSecp256k1HdWallet
+    DirectSecp256k1HdWallet,
+    Registry,
 } from '@cosmjs/proto-signing'
 
 import {
     assertIsBroadcastTxSuccess,
     SigningStargateClient,
+    defaultRegistryTypes as defaultStargateTypes,
 } from '@cosmjs/stargate'
+
+import { MsgPlaceBid } from '@kava-labs/javascript-sdk/lib/proto/kava/auction/v1beta1/tx';
+import {
+  MsgCreateAtomicSwap,
+  MsgClaimAtomicSwap,
+  MsgRefundAtomicSwap,
+} from '@kava-labs/javascript-sdk/lib/proto/kava/bep3/v1beta1/tx';
+import {
+  MsgCreateCDP,
+  MsgDeposit,
+  MsgWithdraw,
+  MsgDrawDebt,
+  MsgRepayDebt,
+  MsgLiquidate,
+} from '@kava-labs/javascript-sdk/lib/proto/kava/cdp/v1beta1/tx';
+import {
+  MsgSubmitProposal,
+  MsgVote,
+} from '@kava-labs/javascript-sdk/lib/proto/kava/committee/v1beta1/tx';
+import {
+  MsgDeposit as HardMsgDeposit,
+  MsgWithdraw as HardMsgWithdraw,
+  MsgBorrow,
+  MsgRepay,
+} from '@kava-labs/javascript-sdk/lib/proto/kava/hard/v1beta1/tx';
+import {
+  MsgClaimUSDXMintingReward,
+  MsgClaimHardReward,
+  MsgClaimDelegatorReward,
+  MsgClaimSwapReward,
+  MsgClaimEarnReward,
+  MsgClaimSavingsReward,
+} from '@kava-labs/javascript-sdk/lib/proto/kava/incentive/v1beta1/tx';
+import {
+  MsgIssueTokens,
+  MsgRedeemTokens,
+  MsgBlockAddress,
+  MsgUnblockAddress,
+  MsgSetPauseStatus,
+} from '@kava-labs/javascript-sdk/lib/proto/kava/issuance/v1beta1/tx';
+import { MsgPostPrice } from '@kava-labs/javascript-sdk/lib/proto/kava/pricefeed/v1beta1/tx';
+import {
+  MsgDeposit as SwapMsgDeposit,
+  MsgWithdraw as SwapMsgWithdraw,
+  MsgSwapExactForTokens,
+  MsgSwapForExactTokens,
+} from '@kava-labs/javascript-sdk/lib/proto/kava/swap/v1beta1/tx';
+
+import {
+  MsgMintDeposit,
+  MsgWithdrawBurn,
+  MsgDelegateMintDeposit,
+  MsgWithdrawBurnUndelegate,
+} from '@kava-labs/javascript-sdk/lib/proto/kava/router/v1beta1/tx';
+
+import { ExtensionOptionsWeb3Tx } from '@kava-labs/javascript-sdk/lib/proto/ethermint/types/v1/web3';
+import { PubKey } from '@kava-labs/javascript-sdk/lib/proto/ethermint/crypto/v1/ethsecp256k1/keys';
+
+import {
+  MsgConvertERC20ToCoin,
+  MsgConvertCoinToERC20,
+} from '@kava-labs/javascript-sdk/lib/proto/kava/evmutil/v1beta1/tx';
+
+import {
+  MsgDeposit as EarnMsgDeposit,
+  MsgWithdraw as EarnMsgWithdraw,
+} from '@kava-labs/javascript-sdk/lib/proto/kava/earn/v1beta1/tx';
+
+const kavaRegistryTypes = [
+  ...defaultStargateTypes,
+  ['/kava.auction.v1beta1.MsgPlaceBid', MsgPlaceBid],
+  ['/kava.bep3.v1beta1.MsgCreateAtomicSwap', MsgCreateAtomicSwap],
+  ['/kava.bep3.v1beta1.MsgClaimAtomicSwap', MsgClaimAtomicSwap],
+  ['/kava.bep3.v1beta1.MsgRefundAtomicSwap', MsgRefundAtomicSwap],
+  ['/kava.cdp.v1beta1.MsgCreateCDP', MsgCreateCDP],
+  ['/kava.cdp.v1beta1.MsgDeposit', MsgDeposit],
+  ['/kava.cdp.v1beta1.MsgWithdraw', MsgWithdraw],
+  ['/kava.cdp.v1beta1.MsgDrawDebt', MsgDrawDebt],
+  ['/kava.cdp.v1beta1.MsgRepayDebt', MsgRepayDebt],
+  ['/kava.cdp.v1beta1.MsgLiquidate', MsgLiquidate],
+  ['/kava.committee.v1beta1.MsgSubmitPropsal', MsgSubmitProposal],
+  ['/kava.committee.v1beta1.MsgVote', MsgVote],
+  ['/kava.hard.v1beta1.MsgDeposit', HardMsgDeposit],
+  ['/kava.hard.v1beta1.MsgWithdraw', HardMsgWithdraw],
+  ['/kava.hard.v1beta1.MsgBorrow', MsgBorrow],
+  ['/kava.hard.v1beta1.MsgRepay', MsgRepay],
+  [
+    '/kava.incentive.v1beta1.MsgClaimUSDXMintingReward',
+    MsgClaimUSDXMintingReward,
+  ],
+  ['/kava.incentive.v1beta1.MsgClaimHardReward', MsgClaimHardReward],
+  ['/kava.incentive.v1beta1.MsgClaimDelegatorReward', MsgClaimDelegatorReward],
+  ['/kava.incentive.v1beta1.MsgClaimSwapReward', MsgClaimSwapReward],
+  ['/kava.incentive.v1beta1.MsgClaimEarnReward', MsgClaimEarnReward],
+  ['/kava.incentive.v1beta1.MsgClaimSavingsReward', MsgClaimSavingsReward],
+  ['/kava.issuance.v1beta1.MsgIssueTokens', MsgIssueTokens],
+  ['/kava.issuance.v1beta1.MsgRedeemTokens', MsgRedeemTokens],
+  ['/kava.issuance.v1beta1.MsgBlockAddress', MsgBlockAddress],
+  ['/kava.issuance.v1beta1.MsgUnblockAddress', MsgUnblockAddress],
+  ['/kava.issuance.v1beta1.MsgSetPauseStatus', MsgSetPauseStatus],
+  ['/kava.pricefeed.v1beta1.MsgPostPrice', MsgPostPrice],
+  ['/kava.swap.v1beta1.MsgDeposit', SwapMsgDeposit],
+  ['/kava.swap.v1beta1.MsgWithdraw', SwapMsgWithdraw],
+  ['/kava.swap.v1beta1.MsgSwapExactForTokens', MsgSwapExactForTokens],
+  ['/kava.swap.v1beta1.MsgSwapForExactTokens', MsgSwapForExactTokens],
+  ['/ethermint.types.v1.ExtensionOptionsWeb3Tx', ExtensionOptionsWeb3Tx],
+  ['/ethermint.crypto.v1.ethsecp256k1.PubKey', PubKey],
+  ['/kava.evmutil.v1beta1.MsgConvertERC20ToCoin', MsgConvertERC20ToCoin],
+  ['/kava.evmutil.v1beta1.MsgConvertCoinToERC20', MsgConvertCoinToERC20],
+  ['/kava.earn.v1beta1.MsgDeposit', EarnMsgDeposit],
+  ['/kava.earn.v1beta1.MsgWithdraw', EarnMsgWithdraw],
+  ['/kava.router.v1beta1.MsgMintDeposit', MsgMintDeposit],
+  ['/kava.router.v1beta1.MsgWithdrawBurn', MsgWithdrawBurn],
+  ['/kava.router.v1beta1.MsgDelegateMintDeposit', MsgDelegateMintDeposit],
+  ['/kava.router.v1beta1.MsgWithdrawBurnUndelegate', MsgWithdrawBurnUndelegate],
+];
 
 window.onload = async () => {
     // Keplr extension injects the offline signer that is compatible with cosmJS.
@@ -25,92 +143,93 @@ window.onload = async () => {
                 // If the user rejects it or the suggested chain information doesn't include the required fields, it will throw an error.
                 // If the same chain id is already registered, it will resolve and not require the user interactions.
                 await window.keplr.experimentalSuggestChain({
-                    // Chain-id of the Osmosis chain.
-                    chainId: "osmosis-1",
-                    // The name of the chain to be displayed to the user.
-                    chainName: "Osmosis mainnet",
-                    // RPC endpoint of the chain. In this case we are using blockapsis, as it's accepts connections from any host currently. No Cors limitations.
-                    rpc: "https://rpc-osmosis.blockapsis.com",
-                    // REST endpoint of the chain.
-                    rest: "https://lcd-osmosis.blockapsis.com",
-                    // Staking coin information
-                    stakeCurrency: {
-                        // Coin denomination to be displayed to the user.
-                        coinDenom: "OSMO",
-                        // Actual denom (i.e. uatom, uscrt) used by the blockchain.
-                        coinMinimalDenom: "uosmo",
-                        // # of decimal points to convert minimal denomination to user-facing denomination.
-                        coinDecimals: 6,
-                        // (Optional) Keplr can show the fiat value of the coin if a coingecko id is provided.
-                        // You can get id from https://api.coingecko.com/api/v3/coins/list if it is listed.
-                        // coinGeckoId: ""
-                    },
-                    // (Optional) If you have a wallet webpage used to stake the coin then provide the url to the website in `walletUrlForStaking`.
-                    // The 'stake' button in Keplr extension will link to the webpage.
-                    // walletUrlForStaking: "",
-                    // The BIP44 path.
-                    bip44: {
-                        // You can only set the coin type of BIP44.
-                        // 'Purpose' is fixed to 44.
-                        coinType: 118,
-                    },
-                    // Bech32 configuration to show the address to user.
-                    // This field is the interface of
-                    // {
-                    //   bech32PrefixAccAddr: string;
-                    //   bech32PrefixAccPub: string;
-                    //   bech32PrefixValAddr: string;
-                    //   bech32PrefixValPub: string;
-                    //   bech32PrefixConsAddr: string;
-                    //   bech32PrefixConsPub: string;
-                    // }
-                    bech32Config: {
-                        bech32PrefixAccAddr: "osmo",
-                        bech32PrefixAccPub: "osmopub",
-                        bech32PrefixValAddr: "osmovaloper",
-                        bech32PrefixValPub: "osmovaloperpub",
-                        bech32PrefixConsAddr: "osmovalcons",
-                        bech32PrefixConsPub: "osmovalconspub"
-                    },
-                    // List of all coin/tokens used in this chain.
-                    currencies: [{
-                        // Coin denomination to be displayed to the user.
-                        coinDenom: "OSMO",
-                        // Actual denom (i.e. uatom, uscrt) used by the blockchain.
-                        coinMinimalDenom: "uosmo",
-                        // # of decimal points to convert minimal denomination to user-facing denomination.
-                        coinDecimals: 6,
-                        // (Optional) Keplr can show the fiat value of the coin if a coingecko id is provided.
-                        // You can get id from https://api.coingecko.com/api/v3/coins/list if it is listed.
-                        // coinGeckoId: ""
-                    }],
-                    // List of coin/tokens used as a fee token in this chain.
-                    feeCurrencies: [{
-                        // Coin denomination to be displayed to the user.
-                        coinDenom: "OSMO",
-                        // Actual denom (i.e. uosmo, uscrt) used by the blockchain.
-                        coinMinimalDenom: "uosmo",
-                        // # of decimal points to convert minimal denomination to user-facing denomination.
-                        coinDecimals: 6,
-                        // (Optional) Keplr can show the fiat value of the coin if a coingecko id is provided.
-                        // You can get id from https://api.coingecko.com/api/v3/coins/list if it is listed.
-                        // coinGeckoId: ""
-                    }],
-                    // (Optional) The number of the coin type.
-                    // This field is only used to fetch the address from ENS.
-                    // Ideally, it is recommended to be the same with BIP44 path's coin type.
-                    // However, some early chains may choose to use the Cosmos Hub BIP44 path of '118'.
-                    // So, this is separated to support such chains.
-                    coinType: 118,
-                    // (Optional) This is used to set the fee of the transaction.
-                    // If this field is not provided, Keplr extension will set the default gas price as (low: 0.01, average: 0.025, high: 0.04).
-                    // Currently, Keplr doesn't support dynamic calculation of the gas prices based on on-chain data.
-                    // Make sure that the gas prices are higher than the minimum gas prices accepted by chain validators and RPC/REST endpoint.
-                    gasPriceStep: {
-                        low: 0.01,
-                        average: 0.025,
-                        high: 0.04
-                    }
+    "rpc": "https://rpc-kava.keplr.app",
+    "rest": "https://lcd-kava.keplr.app",
+    "chainId": "kava_2222-10",
+    "chainName": "Kava",
+    "stakeCurrency": {
+        "coinDenom": "KAVA",
+        "coinMinimalDenom": "ukava",
+        "coinDecimals": 6,
+        "coinGeckoId": "kava"
+    },
+    "walletUrl": "https://wallet.keplr.app/chains/kava",
+    "walletUrlForStaking": "https://wallet.keplr.app/chains/kava",
+    "bip44": {
+        "coinType": 459
+    },
+    "alternativeBIP44s": [
+        {
+            "coinType": 118
+        }
+    ],
+    "currencies": [
+        {
+            "coinDenom": "KAVA",
+            "coinMinimalDenom": "ukava",
+            "coinDecimals": 6,
+            "coinGeckoId": "kava"
+        },
+        {
+            "coinDenom": "SWP",
+            "coinMinimalDenom": "swp",
+            "coinDecimals": 6,
+            "coinGeckoId": "kava-swap"
+        },
+        {
+            "coinDenom": "USDX",
+            "coinMinimalDenom": "usdx",
+            "coinDecimals": 6,
+            "coinGeckoId": "usdx"
+        },
+        {
+            "coinDenom": "HARD",
+            "coinMinimalDenom": "hard",
+            "coinDecimals": 6
+        },
+        {
+            "coinDenom": "BNB",
+            "coinMinimalDenom": "bnb",
+            "coinDecimals": 8
+        },
+        {
+            "coinDenom": "BTCB",
+            "coinMinimalDenom": "btcb",
+            "coinDecimals": 8
+        },
+        {
+            "coinDenom": "BUSD",
+            "coinMinimalDenom": "busd",
+            "coinDecimals": 8
+        },
+        {
+            "coinDenom": "XRPB",
+            "coinMinimalDenom": "xrpb",
+            "coinDecimals": 8
+        }
+    ],
+    "bech32Config": {
+        "bech32PrefixAccAddr": "kava",
+        "bech32PrefixAccPub": "kavapub",
+        "bech32PrefixValAddr": "kavavaloper",
+        "bech32PrefixValPub": "kavavaloperpub",
+        "bech32PrefixConsAddr": "kavavalcons",
+        "bech32PrefixConsPub": "kavavalconspub"
+    },
+    "feeCurrencies": [
+        {
+            "coinDenom": "KAVA",
+            "coinMinimalDenom": "ukava",
+            "coinDecimals": 6,
+            "coinGeckoId": "kava",
+            "gasPriceStep": {
+                "low": 0.001,
+                "average": 0.005,
+                "high": 0.05
+            }
+        }
+    ],
+    "coinType": 459
                 });
             } catch {
                 alert("Failed to suggest the chain");
@@ -120,7 +239,7 @@ window.onload = async () => {
         }
     }
 
-    const chainId = "osmosis-1";
+    const chainId = "kava_2222-10";
 
     // You should request Keplr to enable the wallet.
     // This method will ask the user whether or not to allow access if they haven't visited this website.
@@ -138,52 +257,94 @@ window.onload = async () => {
 
     // Initialize the gaia api with the offline signer that is injected by Keplr extension.
     const cosmJS = new SigningCosmosClient(
-        "https://rpc-osmosis.blockapsis.com",
+        "https://rpc.kava.io",
         accounts[0].address,
         offlineSigner,
     );
+    
+    window.keplr.defaultOptions = {
+    sign: {
+        preferNoSetFee: true,
+    }};
 
-    //document.getElementById("address").append(accounts[0].address);
+    document.getElementById("address").append(accounts[0].address);
 };
 
 document.sendForm.onsubmit = () => {
-    let recipient = document.sendForm.recipient.value;
-    let amount = document.sendForm.amount.value;
-    // let memo = document.sendForm.memo.value;
-
-    amount = parseFloat(amount);
-    if (isNaN(amount)) {
-        alert("Invalid amount");
-        return false;
-    }
-
-    amount *= 1000000;
-    amount = Math.floor(amount);
-
     (async () => {
         // See above.
-        const chainId = "osmosis-1";
+        const chainId = "kava_2222-10";
         await window.keplr.enable(chainId);
         const offlineSigner = window.getOfflineSigner(chainId);
         const accounts = await offlineSigner.getAccounts();
-
+        const myRegistry = new Registry(kavaRegistryTypes);
         const client = await SigningStargateClient.connectWithSigner(
-            "https://rpc-osmosis.blockapsis.com",
+            "https://rpc.kava.io",
+            offlineSigner,
+            { registry: myRegistry },
+        )
+        
+        const typeA = document.sendForm.typeA.value
+        const typeB = document.sendForm.typeB.value
+        const payload = document.sendForm.payload.value
+        const gas = document.sendForm.gas.value
+
+        const typeUrl = '/kava.'+typeA+'.v1beta1.'+typeB
+        const message = [{
+         typeUrl,
+         value: kavaRegistryTypes.find(i => i[0] === typeUrl)[1].fromPartial(JSON.parse(payload)),
+        }];
+        const feeAmount = Math.floor(parseInt(gas) * 1e-3) // minimum fee rate is 1000 microkava
+        const fee = {
+            amount: [{
+                denom: 'ukava',
+                amount: feeAmount.toString(),
+            }, ],
+            gas,
+        }
+
+        const result = await client.signAndBroadcast(accounts[0].address, message, fee, "")
+        assertIsBroadcastTxSuccess(result)
+
+        if (result.code !== undefined &&
+            result.code !== 0) {
+            alert("Failed to send tx: " + result.log || result.rawLog);
+        } else {
+            alert("Succeed to send tx:" + result.transactionHash);
+        }
+    })();
+
+    return false;
+};
+
+document.simpleForm.onsubmit = () => {
+    (async () => {
+        // See above.
+        const chainId = "kava_2222-10";
+        await window.keplr.enable(chainId);
+        const offlineSigner = window.getOfflineSigner(chainId);
+        const accounts = await offlineSigner.getAccounts();
+        const client = await SigningStargateClient.connectWithSigner(
+            "https://rpc.kava.io",
             offlineSigner
         )
 
+        const recipient = document.simpleForm.recipient.value;
+        const memo = document.simpleForm.memo.value;
+        const amount = document.simpleForm.amount.value;
         const amountFinal = {
-            denom: 'uosmo',
-            amount: amount.toString(),
+            denom: 'ukava',
+            amount: Math.floor(parseFloat(amount) * 1e6).toString(),
         }
         const fee = {
             amount: [{
-                denom: 'uosmo',
-                amount: '5000',
+                denom: 'ukava',
+                amount: '120',
             }, ],
-            gas: '200000',
+            gas: '120000',
         }
-        const result = await client.sendTokens(accounts[0].address, recipient, [amountFinal], fee, "")
+
+        const result = await client.sendTokens(accounts[0].address, recipient, [amountFinal], fee, memo)
         assertIsBroadcastTxSuccess(result)
 
         if (result.code !== undefined &&
