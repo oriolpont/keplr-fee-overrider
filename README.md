@@ -1,7 +1,7 @@
 # Keplr Fee Overrider
 Web form to send transactions through the Keplr extension. It adds a fee override for cheaper transacting. Focused on Kava, but should work on other networks.
 
-![](splash.png)
+![](keplrexample.png)
 
 ## Requirements
 * [Keplr extension](https://github.com/chainapsis/keplr-wallet/) installed in your browser
@@ -12,7 +12,6 @@ Web form to send transactions through the Keplr extension. It adds a fee overrid
 Install dependencies
 ```
 npm install
-
 ```
 
 Run the development server
