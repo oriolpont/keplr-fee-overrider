@@ -286,7 +286,7 @@ document.sendForm.onsubmit = () => {
         
         const typeA = document.sendForm.typeA.value
         const typeB = document.sendForm.typeB.value
-        const payload = document.sendForm.payload.value
+        const payload = document.sendForm.payload.value.replace(/(\_\w)/g, i => i[1].toUpperCase()) // needs camelCase instead of snake_case
         const gas = document.sendForm.gas.value
 
         const typeUrl = '/kava.'+typeA+'.v1beta1.'+typeB
