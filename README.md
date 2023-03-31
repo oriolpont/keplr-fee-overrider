@@ -16,7 +16,7 @@ npm install
 
 Run the development server
 ```
-npm run dev
+NODE_OPTIONS=--openssl-legacy-provider npm run dev
 ```
 
 Navigate to http://localhost:8081/
