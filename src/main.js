@@ -283,13 +283,27 @@ document.sendForm.onsubmit = () => {
             offlineSigner,
             { registry: myRegistry },
         )
-        
         const typeA = document.sendForm.typeA.value
         const typeB = document.sendForm.typeB.value
         const payload = document.sendForm.payload.value.replace(/(\_\w)/g, i => i[1].toUpperCase()) // needs camelCase instead of snake_case
         const gas = document.sendForm.gas.value
 
-        const typeUrl = '/kava.'+typeA+'.v1beta1.'+typeB
+        let typeUrl = ''
+        switch (document.sendForm.registryClass.value) {
+            case 'kava':
+            typeUrl = '/kava.'+typeA+'.v1beta1.'+typeB
+            break
+            case 'cosmos-sdk': 
+            typeUrl = '/cosmos.'+typeA+'.v1beta1.'+typeB
+            break
+            case 'ibc': 
+            typeUrl = '/ibc.core.'+typeA+'.v1.'+typeB
+            break
+            case 'ibc-applications': 
+            typeUrl = '/ibc.applications.'+typeA+'.v1.'+typeB
+            break
+        }
+
         const message = [{
          typeUrl,
          value: kavaRegistryTypes.find(i => i[0] === typeUrl)[1].fromPartial(JSON.parse(payload)),
@@ -332,10 +346,22 @@ document.simpleForm.onsubmit = () => {
         const recipient = document.simpleForm.recipient.value;
         const memo = document.simpleForm.memo.value;
         const amount = document.simpleForm.amount.value;
+
         const amountFinal = {
-            denom: 'ukava',
-            amount: Math.floor(parseFloat(amount) * 1e6).toString(),
+            denom: '',
+            amount: '',
         }
+        switch (document.simpleForm.token.value) {
+            case 'KAVA':
+                amountFinal.denom = 'ukava'
+                amountFinal.amount = Math.floor(parseFloat(amount) * 1e6).toString()
+                break
+            case 'BUSD':
+                amountFinal.denom = 'busd'
+                amountFinal.amount = Math.floor(parseFloat(amount) * 1e8).toString()
+                break
+        }
+
         const fee = {
             amount: [{
                 denom: 'ukava',
