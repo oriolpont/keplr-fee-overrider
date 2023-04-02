@@ -32,6 +32,7 @@
                             <div class="form-group">
                                 <label for="type">Message type</label>
                                 <div class="input-group">
+                                    <select name="registryClass" id="registryClass"><option value="kava">kava</option><option value="cosmos-sdk">cosmos-sdk</option><option value="ibc">ibc</option><option value="ibc-applications">ibc-applications</option></select>
                                     <input class="form-control" id="typeA" name="typeA"><div class="input-group-text">/</div><input class="form-control" id="typeB" name="typeB">
                                 </div>
                             </div>
@@ -69,13 +70,12 @@
                                 <div class="input-group">
                                     <input class="form-control" id="amount" name="amount">
                                     <div class="input-group-append">
-                                        <div class="input-group-text">KAVA</div>
+                                        <select name="token" id="token"><option value="KAVA">KAVA</option><option value="BUSD">BUSD</option></select>
                                     </div>
                                 </div>
                             </div>
                             <button type="submit" class="btn btn-primary">Submit</button>
                         </form>
-
                 </div>
             </div>
           </div>
